@@ -6,7 +6,7 @@ This tool is optimized for highly constrained, legacy, or limited edge nodes (su
 
 ## Features
 
-- **Zero Dependencies:** Runs entirely on standard `bash`, `curl`, and `jq` (if available), with automatic fallback to standard library `python` (compatible with Python 2 and 3) or pure-shell regex extraction. No virtual environments or heavy packages needed.
+- **Zero Dependencies:** Runs entirely on standard `bash` and `curl`, with automatic support for `jq` (if available) or a highly robust, built-in pure-Bash parser. No Python, virtual environments, or external JSON parsers are required.
 - **Ultra Lightweight:** Less than 50 lines of shell scripting, making it perfect for dynamic devices or minimal shell environments.
 - **Built-in Google Search Support:** Supports the `googleSearch` tool for Vertex AI models through LiteLLM.
 - **SSL Bypass for Older Devices:** Uses `curl -k` natively to bypass handshake or certificate errors on older systems (e.g. iOS 9's expired root certs).
@@ -15,7 +15,7 @@ This tool is optimized for highly constrained, legacy, or limited edge nodes (su
 
 - Bash
 - `curl`
-- `jq` or a basic Python installation (pre-installed on almost all Unix-like platforms) for parsing response payloads (with a basic pure-shell regex fallback).
+- `jq` (optional; falls back to the built-in pure-Bash parser if not installed)
 - A running instance of [LiteLLM](https://github.com/BerriAI/litellm) configured to route traffic to Vertex AI.
 
 ## Installation

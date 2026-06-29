@@ -39,28 +39,37 @@ if command -v jq >/dev/null 2>&1; then
     fi
 fi
 
-# Fallback 1: Python (2 or 3)
-if command -v python >/dev/null 2>&1 || command -v python3 >/dev/null 2>&1; then
-    PYTHON_BIN="python"
-    if ! command -v python >/dev/null 2>&1; then
-        PYTHON_BIN="python3"
-    fi
-    echo "$RESPONSE" | $PYTHON_BIN -c "
-import sys, json
-try:
-    data = json.load(sys.stdin)
-    content = data['choices'][0]['message']['content']
-    print('\nAI: ' + content)
-except Exception:
-    sys.exit(1)
-" 2>/dev/null && exit 0
-fi
+# Fallback: Robust Pure-Bash JSON String Parser (no python or external tools required)
+TEMP="${RESPONSE#*\"content\"}"
+TEMP="${TEMP#*:}"
+TEMP="${TEMP#*\"}"
 
-# Fallback 2: Pure sed/awk/grep parser if both jq and python are missing
-# Best-effort extraction for constrained legacy environments
-CONTENT_RAW=$(echo "$RESPONSE" | grep -o '"content": "[^"]*"' 2>/dev/null | head -n 1 | cut -d'"' -f4- | sed 's/"$//')
-if [ -n "$CONTENT_RAW" ]; then
-    echo -e "\nAI: $(echo -e "$CONTENT_RAW")"
+CONTENT=""
+while [ -n "$TEMP" ]; do
+    PART="${TEMP%%\"*}"
+    CONTENT="${CONTENT}${PART}"
+    
+    # Count trailing backslashes to see if the closing quote is escaped
+    BS_COUNT=0
+    while [[ "${PART: -1}" == '\' ]]; do
+        BS_COUNT=$((BS_COUNT + 1))
+        PART="${PART%?}"
+    done
+    
+    if [ $((BS_COUNT % 2)) -eq 0 ]; then
+        break
+    fi
+    
+    CONTENT="${CONTENT}\""
+    TEMP="${TEMP#*\"}"
+done
+
+if [ -n "$CONTENT" ]; then
+    # Unescape escaped double quotes
+    CONTENT="${CONTENT//\\\"/\"}"
+    # Print output interpreting standard escapes like \n, \t, etc.
+    echo -e "\nAI: $CONTENT"
 else
+    # Ultimate fallback: print raw response
     echo -e "\nRaw Response: $RESPONSE"
 fi
