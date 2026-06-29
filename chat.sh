@@ -30,17 +30,37 @@ RESPONSE=$(curl -k -s -X POST "$URL" \
      -H "Authorization: Bearer $KEY" \
      -d "$PAYLOAD")
 
-# Parse JSON using python to avoid needing jq on old iOS devices
-echo "$RESPONSE" | python -c "
+# Parse JSON response
+if command -v jq >/dev/null 2>&1; then
+    CONTENT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content' 2>/dev/null)
+    if [ $? -eq 0 ] && [ -n "$CONTENT" ] && [ "$CONTENT" != "null" ]; then
+        echo -e "\nAI: $CONTENT"
+        exit 0
+    fi
+fi
+
+# Fallback 1: Python (2 or 3)
+if command -v python >/dev/null 2>&1 || command -v python3 >/dev/null 2>&1; then
+    PYTHON_BIN="python"
+    if ! command -v python >/dev/null 2>&1; then
+        PYTHON_BIN="python3"
+    fi
+    echo "$RESPONSE" | $PYTHON_BIN -c "
 import sys, json
 try:
     data = json.load(sys.stdin)
-    print('\nAI: ' + data['choices'][0]['message']['content'])
-except Exception as e:
-    pass
-" 2>/dev/null
+    content = data['choices'][0]['message']['content']
+    print('\nAI: ' + content)
+except Exception:
+    sys.exit(1)
+" 2>/dev/null && exit 0
+fi
 
-# Fallback if python parsing fails
-if [ $? -ne 0 ]; then
+# Fallback 2: Pure sed/awk/grep parser if both jq and python are missing
+# Best-effort extraction for constrained legacy environments
+CONTENT_RAW=$(echo "$RESPONSE" | grep -o '"content": "[^"]*"' 2>/dev/null | head -n 1 | cut -d'"' -f4- | sed 's/"$//')
+if [ -n "$CONTENT_RAW" ]; then
+    echo -e "\nAI: $(echo -e "$CONTENT_RAW")"
+else
     echo -e "\nRaw Response: $RESPONSE"
 fi
