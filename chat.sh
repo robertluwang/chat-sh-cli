@@ -19,7 +19,7 @@ PROMPT="$1"
 PROMPT_ESCAPED="${PROMPT//\"/\\\"}"
 
 if [ "${LITELLM_ENABLE_SEARCH:-false}" = "true" ]; then
-    PAYLOAD="{\"model\": \"$MODEL\", \"messages\": [{\"role\": \"user\", \"content\": \"$PROMPT_ESCAPED\"}], \"tools\": [{\"googleSearch\": {}}]}"
+    PAYLOAD="{\"model\": \"$MODEL\", \"messages\": [{\"role\": \"user\", \"content\": \"$PROMPT_ESCAPED\"}], \"tools\": [{\"google_search\": {}}]}"
 else
     PAYLOAD="{\"model\": \"$MODEL\", \"messages\": [{\"role\": \"user\", \"content\": \"$PROMPT_ESCAPED\"}]}"
 fi

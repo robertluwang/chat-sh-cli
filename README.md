@@ -8,7 +8,7 @@ This tool is optimized for highly constrained, legacy, or limited edge nodes (su
 
 - **Zero Dependencies:** Runs entirely on standard `bash` and `curl`, with automatic support for `jq` (if available) or a highly robust, built-in pure-Bash parser. No Python, virtual environments, or external JSON parsers are required.
 - **Ultra Lightweight:** Less than 50 lines of shell scripting, making it perfect for dynamic devices or minimal shell environments.
-- **Built-in Google Search Support:** Supports the `googleSearch` tool for Vertex AI models through LiteLLM.
+- **Built-in Google Search Support:** Supports the `google_search` tool for Vertex AI models through LiteLLM.
 - **SSL Bypass for Older Devices:** Uses `curl -k` natively to bypass handshake or certificate errors on older systems (e.g. iOS 9's expired root certs).
 
 ## Prerequisites
